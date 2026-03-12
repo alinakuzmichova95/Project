@@ -37,7 +37,7 @@ fun MainScreen(
     {
 
         Text(
-            text = "🎵 PlaylistMarket",
+            text = stringResource(R.string.main_screen_title),
             fontSize = 32.sp,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary
@@ -81,7 +81,7 @@ fun MainScreen(
 
 @Preview(showBackground = true)
 @Composable
-fun MainScreenPreview() {
+private fun MainScreenPreview() {
     PlaylistMarketTheme {  // Теперь работает
         MainScreen(
             onSearchClick = {},

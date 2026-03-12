@@ -5,12 +5,6 @@ import androidx.core.content.edit
 
 class Storage(private val sharedPreferences: SharedPreferences) {
 
-    companion object {
-        private const val SEARCH_HISTORY_KEY = "search_history"
-        private const val HISTORY_SEPARATOR = ";;;"
-        private const val MAX_HISTORY_SIZE = 10
-    }
-
     fun saveSearchHistory(query: String) {
         val history = getSearchHistory().toMutableList()
         if (query.isNotBlank() && !history.contains(query)) {
@@ -34,4 +28,10 @@ class Storage(private val sharedPreferences: SharedPreferences) {
             remove(SEARCH_HISTORY_KEY)
         }
     }
+    companion object {
+        private const val SEARCH_HISTORY_KEY = "search_history"
+        private const val HISTORY_SEPARATOR = ";;;"
+        private const val MAX_HISTORY_SIZE = 10
+    }
+
 }
