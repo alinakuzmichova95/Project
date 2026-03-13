@@ -19,11 +19,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.playlistmarket.R
-import com.example.playlistmarket.ui.theme.PlaylistMarketTheme  // Добавлен импорт
+import com.example.playlistmarket.ui.theme.PlaylistMarketTheme
 
 @Composable
 fun MainScreen(
     onSearchClick: () -> Unit,
+    onPlaylistsClick: () -> Unit,
+    onFavoritesClick: () -> Unit,
     onSettingsClick: () -> Unit
 ) {
     Column(
@@ -32,9 +34,7 @@ fun MainScreen(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
-    )
-
-    {
+    ) {
 
         Text(
             text = stringResource(R.string.main_screen_title),
@@ -66,6 +66,34 @@ fun MainScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
+            onClick = onPlaylistsClick,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.main_playlists_button),
+                fontSize = 18.sp
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            onClick = onFavoritesClick,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.main_favorites_button),
+                fontSize = 18.sp
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
             onClick = onSettingsClick,
             modifier = Modifier
                 .fillMaxWidth()
@@ -82,9 +110,11 @@ fun MainScreen(
 @Preview(showBackground = true)
 @Composable
 private fun MainScreenPreview() {
-    PlaylistMarketTheme {  // Теперь работает
+    PlaylistMarketTheme {
         MainScreen(
             onSearchClick = {},
+            onPlaylistsClick = {},
+            onFavoritesClick = {},
             onSettingsClick = {}
         )
     }

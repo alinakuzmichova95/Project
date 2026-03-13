@@ -13,11 +13,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,14 +39,15 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.playlistmarket.R
 import com.example.playlistmarket.domain.models.Track
-import com.example.playlistmarket.domain.repository.TracksRepository
-import com.example.playlistmarket.ui.theme.PlaylistMarketTheme  // Добавлен импорт
+import com.example.playlistmarket.ui.theme.PlaylistMarketTheme
 
 @Composable
 fun SearchScreen(
     modifier: Modifier = Modifier,
     viewModel: SearchViewModel,
-    onBackClick: () -> Unit
+    playlistsViewModel: PlaylistsViewModel,
+    onBackClick: () -> Unit,
+    onTrackClick: (Track) -> Unit
 ) {
     val screenState by viewModel.searchScreenState.collectAsStateWithLifecycle()
     var text by remember { mutableStateOf("") }
@@ -54,7 +57,6 @@ fun SearchScreen(
             .padding(top = 16.dp, start = 16.dp, end = 16.dp)
             .fillMaxWidth()
     ) {
-        // Кнопка "Назад"
         Button(
             onClick = onBackClick,
             modifier = Modifier.padding(bottom = 8.dp)
@@ -133,8 +135,10 @@ fun SearchScreen(
                         ) { track ->
                             TrackListItem(
                                 track = track,
-                                onClick = {
-                                    println("Clicked on ${track.trackName}")
+                                onClick = { onTrackClick(track) },
+                                onFavoriteClick = {
+                                    playlistsViewModel.insertTrackToPlaylist(track, -1)
+                                    playlistsViewModel.updateFavoriteStatus(track, true)
                                 }
                             )
                             HorizontalDivider(thickness = 0.5.dp)
@@ -163,7 +167,8 @@ fun SearchScreen(
 @Composable
 fun TrackListItem(
     track: Track,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onFavoriteClick: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -201,31 +206,22 @@ fun TrackListItem(
             horizontalAlignment = Alignment.End
         ) {
             Text(text = track.trackTime)
+
+            IconButton(onClick = onFavoriteClick) {
+                Icon(
+                    imageVector = Icons.Default.Favorite,
+                    contentDescription = "Добавить в избранное",
+                    tint = Color.Red
+                )
+            }
         }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun SearchScreenPreview() {
-    PlaylistMarketTheme {  // Теперь работает
-        SearchScreen(
-            viewModel = SearchViewModel(
-                tracksRepository = object : TracksRepository {
-                    override suspend fun searchTracks(expression: String): List<Track> {
-                        return emptyList()
-                    }
-                }
-            ),
-            onBackClick = {}
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun TrackListItemPreview() {
-    PlaylistMarketTheme {  // Теперь работает
+private fun TrackListItemPreview() {
+    PlaylistMarketTheme {
         TrackListItem(
             track = Track(
                 trackId = 1,
@@ -238,7 +234,8 @@ fun TrackListItemPreview() {
                 primaryGenreName = "Test Genre",
                 country = "US"
             ),
-            onClick = {}
+            onClick = {},
+            onFavoriteClick = {}
         )
     }
 }
