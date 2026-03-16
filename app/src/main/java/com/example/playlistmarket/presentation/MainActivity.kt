@@ -14,6 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.example.playlistmarket.domain.models.Track
 import com.example.playlistmarket.ui.theme.PlaylistMarketTheme
 import com.example.playlistmarket.utils.Creator
 
@@ -21,6 +22,10 @@ sealed class Screen {
     object Main : Screen()
     object Search : Screen()
     object Settings : Screen()
+    object Playlists : Screen()
+    object Favorites : Screen()
+    object NewPlaylist : Screen()
+    object TrackDetails : Screen()
 }
 
 class MainActivity : ComponentActivity() {
@@ -28,6 +33,8 @@ class MainActivity : ComponentActivity() {
     private val searchViewModel: SearchViewModel by viewModels {
         SearchViewModel.getViewModelFactory()
     }
+
+    private val playlistsViewModel: PlaylistsViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,7 +47,8 @@ class MainActivity : ComponentActivity() {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     AppNavigation(
                         modifier = Modifier.padding(innerPadding),
-                        searchViewModel = searchViewModel
+                        searchViewModel = searchViewModel,
+                        playlistsViewModel = playlistsViewModel
                     )
                 }
             }
@@ -51,28 +59,73 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppNavigation(
     modifier: Modifier = Modifier,
-    searchViewModel: SearchViewModel
+    searchViewModel: SearchViewModel,
+    playlistsViewModel: PlaylistsViewModel
 ) {
     var currentScreen by remember { mutableStateOf<Screen>(Screen.Main) }
+    var selectedTrack by remember { mutableStateOf<Track?>(null) }
 
     when (currentScreen) {
         is Screen.Main -> {
             MainScreen(
                 onSearchClick = { currentScreen = Screen.Search },
+                onPlaylistsClick = { currentScreen = Screen.Playlists },
+                onFavoritesClick = { currentScreen = Screen.Favorites },
                 onSettingsClick = { currentScreen = Screen.Settings }
             )
         }
+
         is Screen.Search -> {
             SearchScreen(
                 modifier = modifier,
                 viewModel = searchViewModel,
-                onBackClick = { currentScreen = Screen.Main }
+                playlistsViewModel = playlistsViewModel,
+                onBackClick = { currentScreen = Screen.Main },
+                onTrackClick = { track ->
+                    selectedTrack = track
+                    currentScreen = Screen.TrackDetails
+                }
             )
         }
+
         is Screen.Settings -> {
             SettingsScreen(
                 onBackClick = { currentScreen = Screen.Main }
             )
+        }
+
+        is Screen.Playlists -> {
+            PlaylistsScreen(
+                viewModel = playlistsViewModel,
+                onCreatePlaylistClick = { currentScreen = Screen.NewPlaylist }
+            )
+        }
+
+        is Screen.Favorites -> {
+            FavoritesScreen(
+                viewModel = playlistsViewModel,
+                onBackClick = { currentScreen = Screen.Main }
+            )
+        }
+
+        is Screen.NewPlaylist -> {
+            NewPlaylistScreen(
+                onBackClick = { currentScreen = Screen.Playlists },
+                onSaveClick = { name, description ->
+                    playlistsViewModel.addNewPlaylist(name, description)
+                    currentScreen = Screen.Playlists
+                }
+            )
+        }
+
+        is Screen.TrackDetails -> {
+            selectedTrack?.let { track ->
+                TrackDetailsScreen(
+                    track = track,
+                    playlistsViewModel = playlistsViewModel,
+                    onBackClick = { currentScreen = Screen.Search }
+                )
+            }
         }
     }
 }

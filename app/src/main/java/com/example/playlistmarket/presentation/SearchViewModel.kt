@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.io.IOException
 
 sealed interface SearchState {
     data object Initial : SearchState
@@ -38,8 +37,10 @@ class SearchViewModel(
                 _searchScreenState.update { SearchState.Searching }
                 val list = tracksRepository.searchTracks(expression = whatSearch)
                 _searchScreenState.update { SearchState.Success(foundList = list) }
-            } catch (e: IOException) {
-                _searchScreenState.update { SearchState.Fail(e.message.toString()) }
+            } catch (e: Exception) {
+                _searchScreenState.update {
+                    SearchState.Fail(e.message ?: "Unknown error")
+                }
             }
         }
     }

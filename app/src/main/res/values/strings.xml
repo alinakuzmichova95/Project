@@ -6,6 +6,8 @@
     <string name="main_screen_subtitle">Поиск музыкальных треков через iTunes API</string>
     <string name="main_search_button">🔍 Поиск треков</string>
     <string name="main_settings_button">⚙️ Настройки</string>
+    <string name="main_playlists_button">📁 Плейлисты</string>
+    <string name="main_favorites_button">❤️ Избранное</string>
 
     <!-- Search Screen -->
     <string name="search_placeholder">Введите название трека</string>
