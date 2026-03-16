@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">PlaylistMarket</string>
+    <string name="main_screen_title">🎵 PlaylistMarket</string>
+
+    <!-- Main Screen -->
+    <string name="main_screen_subtitle">Поиск музыкальных треков через iTunes API</string>
+    <string name="main_search_button">🔍 Поиск треков</string>
+    <string name="main_settings_button">⚙️ Настройки</string>
+
+    <!-- Search Screen -->
+    <string name="search_placeholder">Введите название трека</string>
+    <string name="initial_hint">Введите строку для поиска</string>
+    <string name="empty_result">Ничего не найдено</string>
+    <string name="error_message">Ошибка: %s</string>
+    <string name="search_icon_description">Поиск</string>
+    <string name="clear_icon_description">Очистить</string>
+    <string name="track_icon_description">Трек %s</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_title">Настройки</string>
+    <string name="settings_share_button">📤 Поделиться приложением</string>
+    <string name="settings_email_button">✉️ Написать разработчикам</string>
+    <string name="settings_terms_button">📄 Пользовательское соглашение</string>
+    <string name="share_text">Попробуйте приложение PlaylistMarket для поиска музыки!</string>
+    <string name="email_subject">Обратная связь по приложению PlaylistMarket</string>
+    <string name="email_body">Здравствуйте! У меня есть предложение по улучшению приложения…</string>
+    <string name="terms_url">https://www.apple.com/legal/internet-services/itunes/dev/stdeula/</string>
+</resources>
