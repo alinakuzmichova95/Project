@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -23,6 +24,7 @@ sealed class Screen {
     object Search : Screen()
     object Settings : Screen()
     object Playlists : Screen()
+    object Playlist : Screen()
     object Favorites : Screen()
     object NewPlaylist : Screen()
     object TrackDetails : Screen()
@@ -34,7 +36,9 @@ class MainActivity : ComponentActivity() {
         SearchViewModel.getViewModelFactory()
     }
 
-    private val playlistsViewModel: PlaylistsViewModel by viewModels()
+    private val playlistsViewModel: PlaylistsViewModel by viewModels {
+        PlaylistsViewModel.getViewModelFactory()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,6 +68,7 @@ fun AppNavigation(
 ) {
     var currentScreen by remember { mutableStateOf<Screen>(Screen.Main) }
     var selectedTrack by remember { mutableStateOf<Track?>(null) }
+    var selectedPlaylistId by remember { mutableLongStateOf(0L) }
 
     when (currentScreen) {
         is Screen.Main -> {
@@ -97,7 +102,31 @@ fun AppNavigation(
         is Screen.Playlists -> {
             PlaylistsScreen(
                 viewModel = playlistsViewModel,
-                onCreatePlaylistClick = { currentScreen = Screen.NewPlaylist }
+                onCreatePlaylistClick = { currentScreen = Screen.NewPlaylist },
+                onPlaylistClick = { playlistId ->
+                    selectedPlaylistId = playlistId
+                    currentScreen = Screen.Playlist
+                },
+                onBackClick = { currentScreen = Screen.Main }
+            )
+        }
+
+        is Screen.Playlist -> {
+            val playlistViewModel = remember(selectedPlaylistId) {
+                PlaylistViewModel(
+                    repository = Creator.getPlaylistsRepository(),
+                    playlistId = selectedPlaylistId
+                )
+            }
+
+            PlaylistScreen(
+                modifier = modifier,
+                viewModel = playlistViewModel,
+                onTrackClick = { track ->
+                    selectedTrack = track
+                    currentScreen = Screen.TrackDetails
+                },
+                onBackClick = { currentScreen = Screen.Playlists }
             )
         }
 

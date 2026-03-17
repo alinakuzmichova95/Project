@@ -1,5 +1,6 @@
 package com.example.playlistmarket.presentation
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -9,9 +10,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -27,14 +30,24 @@ import com.example.playlistmarket.domain.models.Playlist
 @Composable
 fun PlaylistsScreen(
     viewModel: PlaylistsViewModel,
-    onCreatePlaylistClick: () -> Unit
+    onCreatePlaylistClick: () -> Unit,
+    onPlaylistClick: (Long) -> Unit,
+    onBackClick: () -> Unit
 ) {
     val playlists by viewModel.playlists.collectAsState(initial = emptyList())
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Playlists") }
+                title = { Text("Playlists") },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Назад"
+                        )
+                    }
+                }
             )
         },
         floatingActionButton = {
@@ -71,7 +84,10 @@ fun PlaylistsScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(playlists) { playlist ->
-                    PlaylistItem(playlist = playlist)
+                    PlaylistItem(
+                        playlist = playlist,
+                        onClick = { onPlaylistClick(playlist.id) }
+                    )
                 }
             }
         }
@@ -80,10 +96,13 @@ fun PlaylistsScreen(
 
 @Composable
 fun PlaylistItem(
-    playlist: Playlist
+    playlist: Playlist,
+    onClick: () -> Unit
 ) {
     Column(
-        modifier = Modifier.padding(8.dp)
+        modifier = Modifier
+            .padding(8.dp)
+            .clickable { onClick() }
     ) {
         Text(
             text = playlist.name,

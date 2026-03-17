@@ -16,6 +16,7 @@ sealed interface SearchState {
     data object Initial : SearchState
     data object Searching : SearchState
     data class Success(val foundList: List<Track>) : SearchState
+    data class Empty(val message: String) : SearchState
     data class Fail(val error: String) : SearchState
 }
 
@@ -26,22 +27,41 @@ class SearchViewModel(
     private val _searchScreenState = MutableStateFlow<SearchState>(SearchState.Initial)
     val searchScreenState = _searchScreenState.asStateFlow()
 
+    private var lastSearchQuery: String = ""
+
     fun search(whatSearch: String) {
         if (whatSearch.isBlank()) {
             _searchScreenState.update { SearchState.Initial }
             return
         }
 
+        lastSearchQuery = whatSearch
+
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 _searchScreenState.update { SearchState.Searching }
                 val list = tracksRepository.searchTracks(expression = whatSearch)
-                _searchScreenState.update { SearchState.Success(foundList = list) }
+
+                if (list.isEmpty()) {
+                    _searchScreenState.update {
+                        SearchState.Empty("Ничего не найдено")
+                    }
+                } else {
+                    _searchScreenState.update {
+                        SearchState.Success(foundList = list)
+                    }
+                }
             } catch (e: Exception) {
                 _searchScreenState.update {
-                    SearchState.Fail(e.message ?: "Unknown error")
+                    SearchState.Fail(e.message ?: "Ошибка сервера")
                 }
             }
+        }
+    }
+
+    fun retrySearch() {
+        if (lastSearchQuery.isNotBlank()) {
+            search(lastSearchQuery)
         }
     }
 
