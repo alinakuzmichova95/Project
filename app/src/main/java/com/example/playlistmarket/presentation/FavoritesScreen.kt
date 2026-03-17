@@ -25,7 +25,7 @@ fun FavoritesScreen(
     viewModel: PlaylistsViewModel,
     onBackClick: () -> Unit
 ) {
-    val favorites by viewModel.favoriteList.collectAsState(initial = emptyList())
+    val favorites by viewModel.favoriteTracks.collectAsState(initial = emptyList())
 
     Scaffold(
         topBar = {

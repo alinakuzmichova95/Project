@@ -1,5 +1,6 @@
 package com.example.playlistmarket.presentation
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,17 +30,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
 import com.example.playlistmarket.R
 import com.example.playlistmarket.domain.models.Track
-import com.example.playlistmarket.ui.theme.PlaylistMarketTheme
 
 @Composable
 fun SearchScreen(
@@ -103,7 +102,7 @@ fun SearchScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(stringResource(R.string.initial_hint), fontSize = 18.sp)
+                    Text(stringResource(R.string.initial_hint))
                 }
             }
 
@@ -118,46 +117,65 @@ fun SearchScreen(
 
             is SearchState.Success -> {
                 val tracks = (screenState as SearchState.Success).foundList
-                if (tracks.isEmpty()) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(stringResource(R.string.empty_result), fontSize = 18.sp)
+
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(
+                        items = tracks,
+                        key = { track -> track.trackId }
+                    ) { track ->
+                        TrackListItem(
+                            track = track,
+                            onClick = { onTrackClick(track) },
+                            onFavoriteClick = {
+                                playlistsViewModel.insertTrackToPlaylist(track, -1)
+                                playlistsViewModel.updateFavoriteStatus(track, true)
+                            }
+                        )
+                        HorizontalDivider(thickness = 0.5.dp)
                     }
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        items(
-                            items = tracks,
-                            key = { track -> track.trackId }
-                        ) { track ->
-                            TrackListItem(
-                                track = track,
-                                onClick = { onTrackClick(track) },
-                                onFavoriteClick = {
-                                    playlistsViewModel.insertTrackToPlaylist(track, -1)
-                                    playlistsViewModel.updateFavoriteStatus(track, true)
-                                }
-                            )
-                            HorizontalDivider(thickness = 0.5.dp)
-                        }
+                }
+            }
+
+            is SearchState.Empty -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_music),
+                            contentDescription = "Ничего не найдено",
+                            modifier = Modifier.size(96.dp)
+                        )
+                        Text(
+                            text = (screenState as SearchState.Empty).message,
+                            modifier = Modifier.padding(top = 16.dp)
+                        )
                     }
                 }
             }
 
             is SearchState.Fail -> {
-                val error = (screenState as SearchState.Fail).error
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = stringResource(R.string.error_message, error),
-                        color = Color.Red,
-                        fontSize = 18.sp
-                    )
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_music),
+                            contentDescription = "Ошибка поиска",
+                            modifier = Modifier.size(96.dp)
+                        )
+                        Text(
+                            text = "Произошла ошибка",
+                            modifier = Modifier.padding(top = 16.dp, bottom = 16.dp)
+                        )
+                        Button(onClick = { viewModel.retrySearch() }) {
+                            Text("Обновить")
+                        }
+                    }
                 }
             }
         }
@@ -178,12 +196,15 @@ fun TrackListItem(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Icon(
-            painter = painterResource(id = R.drawable.ic_music),
-            contentDescription = stringResource(R.string.track_icon_description, track.trackName),
+        AsyncImage(
+            model = track.artworkUrl100,
+            contentDescription = track.trackName,
             modifier = Modifier
                 .size(48.dp)
-                .padding(end = 8.dp)
+                .padding(end = 8.dp),
+            contentScale = ContentScale.Crop,
+            placeholder = painterResource(id = R.drawable.ic_music),
+            error = painterResource(id = R.drawable.ic_music)
         )
 
         Column(
@@ -210,32 +231,9 @@ fun TrackListItem(
             IconButton(onClick = onFavoriteClick) {
                 Icon(
                     imageVector = Icons.Default.Favorite,
-                    contentDescription = "Добавить в избранное",
-                    tint = Color.Red
+                    contentDescription = "Добавить в избранное"
                 )
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun TrackListItemPreview() {
-    PlaylistMarketTheme {
-        TrackListItem(
-            track = Track(
-                trackId = 1,
-                trackName = "Test Track",
-                artistName = "Test Artist",
-                trackTimeMillis = 180000,
-                artworkUrl100 = "",
-                collectionName = "Test Collection",
-                releaseDate = "2024",
-                primaryGenreName = "Test Genre",
-                country = "US"
-            ),
-            onClick = {},
-            onFavoriteClick = {}
-        )
     }
 }

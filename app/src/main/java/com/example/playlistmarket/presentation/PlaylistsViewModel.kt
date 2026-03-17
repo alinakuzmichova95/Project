@@ -1,6 +1,7 @@
 package com.example.playlistmarket.presentation
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.playlistmarket.domain.models.Playlist
 import com.example.playlistmarket.domain.models.Track
@@ -8,17 +9,16 @@ import com.example.playlistmarket.domain.repository.PlaylistsRepository
 import com.example.playlistmarket.domain.repository.TracksRepository
 import com.example.playlistmarket.utils.Creator
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
-class PlaylistsViewModel : ViewModel() {
-
-    private val playlistsRepository: PlaylistsRepository = Creator.getPlaylistsRepository()
-    private val tracksRepository: TracksRepository = Creator.getTracksRepository()
+class PlaylistsViewModel(
+    private val playlistsRepository: PlaylistsRepository,
+    private val tracksRepository: TracksRepository
+) : ViewModel() {
 
     val playlists: Flow<List<Playlist>> = playlistsRepository.getAllPlaylists()
 
-    val favoriteList: Flow<List<Track>> = tracksRepository.getFavoriteTracks()
+    val favoriteTracks: Flow<List<Track>> = tracksRepository.getFavoriteTracks()
 
     fun addNewPlaylist(name: String, description: String) {
         viewModelScope.launch {
@@ -38,12 +38,6 @@ class PlaylistsViewModel : ViewModel() {
         }
     }
 
-    fun deleteTrackFromPlaylist(track: Track) {
-        viewModelScope.launch {
-            tracksRepository.deleteTrackFromPlaylist(track)
-        }
-    }
-
     fun deletePlaylistById(id: Long) {
         viewModelScope.launch {
             tracksRepository.deleteTracksByPlaylistId(id)
@@ -51,7 +45,16 @@ class PlaylistsViewModel : ViewModel() {
         }
     }
 
-    suspend fun isExist(track: Track): Track? {
-        return tracksRepository.getTrackByNameAndArtist(track).firstOrNull()
+    companion object {
+        fun getViewModelFactory(): ViewModelProvider.Factory =
+            object : ViewModelProvider.Factory {
+                @Suppress("UNCHECKED_CAST")
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    return PlaylistsViewModel(
+                        playlistsRepository = Creator.getPlaylistsRepository(),
+                        tracksRepository = Creator.getTracksRepository()
+                    ) as T
+                }
+            }
     }
 }
